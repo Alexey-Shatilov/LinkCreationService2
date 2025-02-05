@@ -1,25 +1,11 @@
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class UrlAccess {
     private String shortUrl;
-    private AtomicInteger accessCount;
-    private int limit;
+    private String userId;
 
-    public UrlAccess(String shortUrl, int limit) {
+    public UrlAccess(String shortUrl, String userId) {
         this.shortUrl = shortUrl;
-        this.accessCount = new AtomicInteger(0);
-        this.limit = limit;
+        this.userId = userId;
     }
 
-    public boolean canAccess() {
-        return accessCount.get() < limit;
-    }
-
-    public void access() {
-        if (canAccess()) {
-            accessCount.incrementAndGet();
-        } else {
-            throw new RuntimeException("Link is no longer available.");
-        }
-    }
+    // Геттеры и сеттеры
 }

@@ -1,40 +1,42 @@
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Properties;
 
 public class LinkShortenerService {
-    private final Map<String, Link> links = new HashMap<>();
+    private final Map<String, ExpiringUrl> urlStore = new HashMap<>();
+    private final long defaultLifetime;
+    private final int defaultMaxClicks;
+
+    public LinkShortenerService() {
+        // Загрузка конфигурации из файла
+        Properties properties = new Properties();
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+            properties.load(input);
+            this.defaultLifetime = Long.parseLong(properties.getProperty("defaultLifetime"));
+            this.defaultMaxClicks = Integer.parseInt(properties.getProperty("defaultMaxClicks"));
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка загрузки конфигурации", e);
+        }
+    }
 
     public String shortenLink(String longUrl, String userId) {
-        String shortUrl = generateShortUrl(longUrl, userId);
-        links.put(shortUrl, new Link(longUrl, userId));
+        String shortUrl = UrlShortener.generateShortUrl(longUrl);
+        urlStore.put(shortUrl, new ExpiringUrl(longUrl, defaultLifetime, defaultMaxClicks, userId));
         return shortUrl;
     }
 
-    private String generateShortUrl(String longUrl, String userId) {
-        // Генерация уникальной короткой ссылки
-        return "clck.ru/" + UUID.randomUUID().toString().substring(0, 6);
-    }
-
     public String getLongUrl(String shortUrl) {
-        Link link = links.get(shortUrl);
-        if (link != null) {
-            return link.getLongUrl();
+        ExpiringUrl expiringUrl = urlStore.get(shortUrl);
+        if (expiringUrl != null && expiringUrl.isValid()) {
+            expiringUrl.incrementClickCount();
+            return expiringUrl.getLongUrl();
         }
-        return null; // Ссылка не найдена
+        return null;
     }
 
-    private static class Link {
-        private final String longUrl;
-        private final String userId;
-
-        public Link(String longUrl, String userId) {
-            this.longUrl = longUrl;
-            this.userId = userId;
-        }
-
-        public String getLongUrl() {
-            return longUrl;
-        }
+    public void deleteLink(String shortUrl) {
+        urlStore.remove(shortUrl);
     }
 }

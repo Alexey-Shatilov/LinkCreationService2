@@ -1,13 +1,9 @@
-import java.util.UUID;
-
 public class User {
-    private String uuid;
+    private String userId;
 
-    public User() {
-        this.uuid = UUID.randomUUID().toString();
+    public User(String userId) {
+        this.userId = userId;
     }
 
-    public String getUuid() {
-        return uuid;
-    }
+    // Геттеры и сеттеры
 }

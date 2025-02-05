@@ -1,7 +1,3 @@
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -12,7 +8,7 @@ public class Main {
         String userId = UUID.randomUUID().toString(); // Генерация UUID для пользователя
 
         while (true) {
-            System.out.println("Введите команду (shorten, open, exit):");
+            System.out.println("Введите команду (shorten, open, delete, exit):");
             String command = scanner.nextLine();
 
             if (command.equalsIgnoreCase("shorten")) {
@@ -25,14 +21,15 @@ public class Main {
                 String shortUrl = scanner.nextLine();
                 String longUrl = service.getLongUrl(shortUrl);
                 if (longUrl != null) {
-                    try {
-                        Desktop.getDesktop().browse(new URI(longUrl));
-                    } catch (IOException | URISyntaxException e) {
-                        System.out.println("Ошибка при открытии ссылки: " + e.getMessage());
-                    }
+                    LinkRedirector.openLink(longUrl);
                 } else {
-                    System.out.println("Ссылка не найдена.");
+                    System.out.println("Ссылка не найдена или доступ к ней ограничен.");
                 }
+            } else if (command.equalsIgnoreCase("delete")) {
+                System.out.println("Введите короткую ссылку для удаления:");
+                String shortUrl = scanner.nextLine();
+                service.deleteLink(shortUrl);
+                System.out.println("Ссылка удалена: " + shortUrl);
             } else if (command.equalsIgnoreCase("exit")) {
                 break;
             } else {

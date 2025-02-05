@@ -1,21 +1,31 @@
-import java.util.Timer;
-import java.util.TimerTask;
+import java.time.Instant;
 
 public class ExpiringUrl {
-    private String shortUrl;
+    private String longUrl;
     private long expirationTime;
+    private int maxClicks;
+    private int clickCount;
+    private String userId;
 
-    public ExpiringUrl(String shortUrl, long duration) {
-        this.shortUrl = shortUrl;
-        this.expirationTime = System.currentTimeMillis() + duration;
+    public ExpiringUrl(String longUrl, long lifetime, int maxClicks, String userId) {
+        this.longUrl = longUrl;
+        this.expirationTime = Instant.now().toEpochMilli() + lifetime;
+        this.maxClicks = maxClicks;
+        this.clickCount = 0;
+        this.userId = userId;
+    }
 
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                // Логика удаления ссылки
-                System.out.println("Link expired: " + shortUrl);
-            }
-        }, duration);
+    public boolean isValid() {
+        return clickCount < maxClicks && Instant.now().toEpochMilli() < expirationTime;
+    }
+
+    public void incrementClickCount() {
+        if (isValid()) {
+            clickCount++;
+        }
+    }
+
+    public String getLongUrl() {
+        return longUrl;
     }
 }
